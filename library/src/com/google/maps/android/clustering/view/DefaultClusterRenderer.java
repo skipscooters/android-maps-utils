@@ -311,6 +311,15 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
     }
 
     /**
+     * Determine whether the cluster should be rendered as individual markers or a cluster.
+     *
+     * Weird hack that fixes the animations as per https://github.com/googlemaps/android-maps-utils/issues/408 -  "I noticed that having two different callbacks to decide if a cluster should be rendered made animations work. Seems like the framework expects shouldRenderAsCluster to be "stable", as in returning the same result based on the same input. Using zoom level in the decision breaks that assumption."
+     */
+    protected boolean shouldRenderAsClusterWithAnimation(Cluster<T> cluster) {
+        return shouldRenderAsCluster(cluster); // (afik) Apparently it's enough to just delegate to this lol and animations work
+    }
+
+    /**
      * Transforms the current view (represented by DefaultClusterRenderer.mClusters and DefaultClusterRenderer.mZoom) to a
      * new zoom level and set of clusters.
      * <p/>
@@ -828,7 +837,7 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
 
         private void perform(MarkerModifier markerModifier) {
             // Don't show small clusters. Render the markers inside, instead.
-            if (!shouldRenderAsCluster(cluster)) {
+            if (!shouldRenderAsClusterWithAnimation(cluster)) {
                 for (T item : cluster.getItems()) {
                     Marker marker = mMarkerCache.get(item);
                     MarkerWithPosition markerWithPosition;
